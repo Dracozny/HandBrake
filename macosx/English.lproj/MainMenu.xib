@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13771" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13770" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
         <development version="8000" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13771"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13770"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -340,22 +340,9 @@
                             <menuItem isSeparatorItem="YES" tag="-1" id="1954">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Make Default Preset" tag="-1" id="frQ-v5-pRa" userLabel="Make Default Preset">
+                            <menuItem title="Select Default Preset" tag="-1" id="2421">
                                 <connections>
-                                    <action selector="setDefaultPreset:" target="-1" id="adZ-ic-MKn"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="-1" id="2954">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
-                            <menuItem title="Rename Preset…" tag="-1" id="1GQ-n3-jfY">
-                                <connections>
-                                    <action selector="showRenamePresetPanel:" target="-1" id="gRr-Jl-kZO"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Delete Preset" tag="-1" id="CN3-Rh-gVf">
-                                <connections>
-                                    <action selector="deletePreset:" target="-1" id="ZGV-Ji-MGc"/>
+                                    <action selector="selectDefaultPreset:" target="-1" id="2eH-zk-T3n"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="-1" id="CQW-qW-5C5">
@@ -376,14 +363,6 @@
                             <menuItem title="Reset Official Presets" tag="-1" id="1950">
                                 <connections>
                                     <action selector="addFactoryPresets:" target="6lr-Yy-GMc" id="5Ga-rb-ORy"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="-1" id="ymY-bE-5EP">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
-                            <menuItem title="Select Default Preset" tag="-1" id="2421">
-                                <connections>
-                                    <action selector="selectDefaultPreset:" target="-1" id="2eH-zk-T3n"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="-1" id="wgI-bc-Ors">

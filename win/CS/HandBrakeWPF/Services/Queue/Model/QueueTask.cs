@@ -13,7 +13,6 @@ namespace HandBrakeWPF.Services.Queue.Model
 
     using HandBrake.ApplicationServices.Model;
 
-    using HandBrakeWPF.Services.Presets.Model;
     using HandBrakeWPF.Utilities;
 
     using EncodeTask = HandBrakeWPF.Services.Encode.Model.EncodeTask;
@@ -25,7 +24,6 @@ namespace HandBrakeWPF.Services.Queue.Model
     {
         private static int id;
         private QueueItemStatus status;
-        private string presetKey;
 
         #region Properties
 
@@ -52,19 +50,12 @@ namespace HandBrakeWPF.Services.Queue.Model
         /// <param name="scannedSourcePath">
         /// The scanned Source Path.
         /// </param>
-        /// <param name="currentPreset">
-        /// The currently active preset.
-        /// </param>
-        public QueueTask(EncodeTask task, HBConfiguration configuration, string scannedSourcePath, Preset currentPreset)
+        public QueueTask(EncodeTask task, HBConfiguration configuration, string scannedSourcePath)
         {
             this.Task = task;
             this.Configuration = configuration;
             this.Status = QueueItemStatus.Waiting;
             this.ScannedSourcePath = scannedSourcePath;
-            if (currentPreset != null)
-            {
-                this.presetKey = currentPreset.Name;
-            }
 
             id = id + 1;
             this.Id = string.Format("{0}.{1}", GeneralUtilities.ProcessId, id);
@@ -107,14 +98,6 @@ namespace HandBrakeWPF.Services.Queue.Model
         public HBConfiguration Configuration { get; set; }
 
         public QueueStats Statistics { get; set; }
-
-        public string SelectedPresetKey
-        {
-            get
-            {
-                return this.presetKey;
-            }
-        }
 
         #endregion
 

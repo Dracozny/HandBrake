@@ -25,7 +25,7 @@ namespace HandBrakeWPF.Utilities
         private static Action<Action> executor = action => action();
 
         /// <summary>
-        /// Set the Foreground Window
+        /// Set the Forground Window
         /// </summary>
         /// <param name="hWnd">
         /// The h wnd.
@@ -103,7 +103,7 @@ namespace HandBrakeWPF.Utilities
         /// The dw process group id.
         /// </param>
         /// <returns>
-        /// Bool true is success
+        /// Bool true is sucess
         /// </returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GenerateConsoleCtrlEvent(ConsoleCtrlEvent sigevent, int dwProcessGroupId);

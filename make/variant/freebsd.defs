@@ -1,7 +1,5 @@
 TARGET.dylib.ext = .so
 
-GCC.D       = LIBICONV_PLUG
-
 GCC.args.dylib = -shared
 GCC.args.pic   = 1
 

@@ -147,6 +147,38 @@ int hb_avcodec_close(AVCodecContext *avctx)
     return ret;
 }
 
+int hb_avcodec_test_encoder(AVCodec *codec)
+{
+    AVDictionary * av_opts = NULL;
+    AVCodecContext * context = NULL;
+    if( NULL == codec ) {
+        return -1;
+    }
+    context = avcodec_alloc_context3(codec);
+    if( NULL == context ) {
+        return -2;
+    }
+    // setting all fields marked: 'encoding: MUST be set by user'
+    context->time_base.num = 1;
+    context->time_base.den = 25;
+    context->width = 640;
+    context->height = 480;
+    // deprecated: context->me_method = 1;
+    // setting other fields as required via testing
+    context->pix_fmt   = AV_PIX_FMT_YUV420P;
+
+    av_dict_set(&av_opts, "b", "2M", 0);
+    if (avcodec_open2(context, codec, &av_opts) < 0) {
+        av_dict_free( &av_opts );
+        av_free( context );
+        return -3;
+    }
+    av_dict_free( &av_opts );
+    avcodec_flush_buffers( context );
+    avcodec_close( context );
+    av_free( context );
+    return 0; // OK
+}
 
 int hb_picture_fill(uint8_t *data[], int stride[], hb_buffer_t *buf)
 {
@@ -758,7 +790,7 @@ int hb_detect_comb( hb_buffer_t * buf, int color_equal, int color_diff, int thre
         // compare results
         /*  The final cc score for a plane is the percentage of combed pixels it contains.
             Because sensitivity goes down to hundreths of a percent, multiply by 1000
-            so it will be easy to compare against the threshold value which is an integer. */
+            so it will be easy to compare against the threhold value which is an integer. */
         cc[k] = (int)( ( cc_1 + cc_2 ) * 1000.0 / ( width * height ) );
     }
 

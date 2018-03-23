@@ -514,7 +514,7 @@ int encx264Init( hb_work_object_t * w, hb_job_t * job )
         hb_log( "encx264: min-keyint: %s, keyint: %s", min, max );
     }
 
-    /* Settings which can't be overridden in the encoder_options string
+    /* Settings which can't be overriden in the encoder_options string
      * (muxer-specific settings, resolution, ratecontrol, etc.). */
 
     /* Disable annexb. Inserts size into nal header instead of start code. */
@@ -976,23 +976,15 @@ static int apply_h264_profile(const x264_api_t *api, x264_param_t *param,
         /*
          * lossless requires High 4:4:4 Predictive profile
          */
-        int qp_bd_offset = 6 * (api->bit_depth - 8);
-        if (strcasecmp(h264_profile, "high444") != 0 &&
-            ((param->rc.i_rc_method == X264_RC_CQP && param->rc.i_qp_constant <= 0) ||
-             (param->rc.i_rc_method == X264_RC_CRF && (int)(param->rc.f_rf_constant + qp_bd_offset) <= 0)))
+        if (param->rc.f_rf_constant < 1.0 &&
+            param->rc.i_rc_method == X264_RC_CRF &&
+            strcasecmp(h264_profile, "high444") != 0)
         {
             if (verbose)
             {
                 hb_log("apply_h264_profile [warning]: lossless requires high444 profile, disabling");
             }
-            if (param->rc.i_rc_method == X264_RC_CQP)
-            {
-                param->rc.i_qp_constant = 1;
-            }
-            else
-            {
-                param->rc.f_rf_constant = 1 - qp_bd_offset;
-            }
+            param->rc.f_rf_constant = 1.0;
         }
         return api->param_apply_profile(param, h264_profile);
     }
@@ -1063,8 +1055,7 @@ int apply_h264_level(const x264_api_t *api, x264_param_t *param,
             return -1;
         }
     }
-    else if(h264_level != NULL &&
-            !strcasecmp(h264_level, hb_h264_level_names[0]))
+    else if(!strcasecmp(h264_level, hb_h264_level_names[0]))
     {
         // "auto", do nothing
         return 0;
@@ -1349,7 +1340,7 @@ char * hb_x264_param_unparse(int bit_depth, const char *x264_preset,
     if (api->param_default_preset(&param, x264_preset, x264_tune) < 0)
     {
         /*
-         * Note: GUIs should be able to always specify valid preset/tunes, so
+         * Note: GUIs should be able to always specifiy valid preset/tunes, so
          *       this code will hopefully never be reached
          */
         return strdup("hb_x264_param_unparse: invalid x264 preset/tune");
@@ -1900,7 +1891,7 @@ char * hb_x264_param_unparse(int bit_depth, const char *x264_preset,
     }
     else
     {
-        // pbratio requires bframes and is incompatible with mbtree
+        // pbratio requires bframes and is incomaptible with mbtree
         hb_dict_remove(x264_opts, "pbratio");
     }
     if (param.rc.f_qcompress != defaults.rc.f_qcompress)

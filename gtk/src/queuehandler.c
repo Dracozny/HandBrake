@@ -980,13 +980,6 @@ queue_save_action_cb(GSimpleAction *action, GVariant *param,
 }
 
 G_MODULE_EXPORT void
-queue_open_action_cb(GSimpleAction *action, GVariant *param,
-                     signal_user_data_t *ud)
-{
-    open_queue_file(ud);
-}
-
-G_MODULE_EXPORT void
 queue_open_clicked_cb(GtkWidget *widget, signal_user_data_t *ud)
 {
     open_queue_file(ud);
@@ -1724,7 +1717,7 @@ title_dest_file_cb(GtkWidget *widget, signal_user_data_t *ud)
 
     // Check if changing the destination file name resolves
     // a file name conflict.  Enable selection if so.
-    // Disable selection if it creates a conflict!!!
+    // Disable selection if it creates a confict!!!
     gboolean can_select;
     can_select = title_multiple_can_select(ud->settings_array, index);
     ghb_dict_set_bool(settings, "title_selected", can_select);
@@ -1760,7 +1753,7 @@ title_dest_dir_cb(GtkWidget *widget, signal_user_data_t *ud)
 
     // Check if changing the destination file name resolves
     // a file name conflict.  Enable selection if so.
-    // Disable selection if it creates a conflict!!!
+    // Disable selection if it creates a confict!!!
     gboolean can_select;
     can_select = title_multiple_can_select(ud->settings_array, index);
     ghb_dict_set_bool(settings, "title_selected", can_select);
@@ -2149,7 +2142,7 @@ queue_drag_motion_cb(
         pos = GTK_TREE_VIEW_DROP_BEFORE;
     if (pos == GTK_TREE_VIEW_DROP_INTO_OR_AFTER)
         pos = GTK_TREE_VIEW_DROP_AFTER;
-    // Don't allow dropping int child items
+    // Don't allow droping int child items
     if (gtk_tree_path_get_depth(path) > 1)
     {
         gtk_tree_path_up(path);

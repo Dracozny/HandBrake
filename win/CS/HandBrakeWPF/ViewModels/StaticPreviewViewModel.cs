@@ -142,7 +142,7 @@ namespace HandBrakeWPF.ViewModels
             // Live Preview
             this.userSettingService = userSettingService;
             this.errorService = errorService;
-            this.encodeService = new LibEncode(); // Preview needs a separate instance rather than the shared singleton. This could maybe do with being refactored at some point
+            this.encodeService = new LibEncode(); // Preview needs a seperate instance rather than the shared singleton. This could maybe do with being refactored at some point
 
             this.Title = "Preview";
             this.Percentage = "0.00%";
@@ -605,7 +605,7 @@ namespace HandBrakeWPF.ViewModels
                 encodeTask.SubtitleTracks.Remove(scanTrack);
             }
 
-            QueueTask task = new QueueTask(encodeTask, HBConfigurationFactory.Create(), this.ScannedSource.ScanPath, null);
+            QueueTask task = new QueueTask(encodeTask, HBConfigurationFactory.Create(), this.ScannedSource.ScanPath);
             ThreadPool.QueueUserWorkItem(this.CreatePreview, task);
         }
 
