@@ -140,9 +140,11 @@ int hb_avcodec_open(AVCodecContext *avctx, AVCodec *codec,
     return ret;
 }
 
-void hb_avcodec_free_context(AVCodecContext **avctx)
+int hb_avcodec_close(AVCodecContext *avctx)
 {
-    avcodec_free_context(avctx);
+    int ret;
+    ret = avcodec_close(avctx);
+    return ret;
 }
 
 

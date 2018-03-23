@@ -399,13 +399,12 @@ void encavcodecClose( hb_work_object_t * w )
         return;
     }
     hb_chapter_queue_close(&pv->chapter_queue);
-    if( pv->context )
+    if( pv->context && pv->context->codec )
     {
         hb_deep_log( 2, "encavcodec: closing libavcodec" );
-        if( pv->context->codec ) {
-            avcodec_flush_buffers( pv->context );
-        }
-        hb_avcodec_free_context(&pv->context);
+        avcodec_flush_buffers( pv->context );
+        hb_avcodec_close( pv->context );
+        av_free( pv->context );
     }
     if( pv->file )
     {
