@@ -259,7 +259,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Track Name:.
+        ///   Looks up a localized string similar to Track Name.
         /// </summary>
         public static string AudioView_TrackName {
             get {
@@ -1006,7 +1006,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Preview.
+        ///   Looks up a localized string similar to Preview.
         /// </summary>
         public static string MainView_ShowPreview {
             get {
@@ -1015,7 +1015,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Queue.
+        ///   Looks up a localized string similar to Queue.
         /// </summary>
         public static string MainView_ShowQueue {
             get {
