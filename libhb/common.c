@@ -883,13 +883,6 @@ int hb_audio_samplerate_find_closest(int samplerate, uint32_t codec)
     const hb_rate_t * rate, * prev, * next;
 
     rate = prev = next = hb_audio_samplerate_get_next_for_codec(NULL, codec);
-
-    if (rate == NULL)
-    {
-        // This codec doesn't support any samplerate
-        return 0;
-    }
-
     while (rate != NULL && next->rate < samplerate)
     {
         rate = hb_audio_samplerate_get_next_for_codec(rate, codec);
@@ -4576,7 +4569,7 @@ void hb_audio_close( hb_audio_t **audio )
  *********************************************************************/
 void hb_audio_config_init(hb_audio_config_t * audiocfg)
 {
-    /* Set read-only parameters to invalid values */
+    /* Set read-only paramaters to invalid values */
     audiocfg->in.codec = 0;
     audiocfg->in.codec_param = 0;
     audiocfg->in.reg_desc = 0;
@@ -4596,7 +4589,7 @@ void hb_audio_config_init(hb_audio_config_t * audiocfg)
     audiocfg->lang.simple[0] = 0;
     audiocfg->lang.iso639_2[0] = 0;
 
-    /* Initialize some sensible defaults */
+    /* Initalize some sensible defaults */
     audiocfg->in.track = audiocfg->out.track = 0;
     audiocfg->out.codec = hb_audio_encoder_get_default(HB_MUX_MP4); // default container
     audiocfg->out.samplerate = -1;
@@ -4633,7 +4626,6 @@ int hb_audio_add(const hb_job_t * job, const hb_audio_config_t * audiocfg)
     {
         /* This most likely means the client didn't call hb_audio_config_init
          * so bail. */
-        hb_audio_close(&audio);
         return 0;
     }
 
@@ -5225,12 +5217,7 @@ char * hb_strncat_dup( const char * s1, const char * s2, size_t n )
         strcpy( str, s1 );
     else
         strcpy( str, "" );
-
-    if (s2)
-    {
-        strncat( str, s2, n );
-    }
-
+    strncat( str, s2, n );
     return str;
 }
 

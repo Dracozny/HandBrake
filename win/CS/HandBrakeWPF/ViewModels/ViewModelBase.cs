@@ -85,7 +85,7 @@ namespace HandBrakeWPF.ViewModels
         /// </summary>
         public virtual void OnLoad()
         {
-            // Implement in the ViewModel to perform viewmodel specific code.
+            // Impliment in the ViewModel to perform viewmodel specific code.
         }
 
         #endregion

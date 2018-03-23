@@ -449,15 +449,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
                     track.MixDown = HandBrakeEncoderHelpers.GetMixdown(audioTrack.AudioMixdown);
 
                     // track.AudioNormalizeMixLevel = audioTrack.AudioNormalizeMixLevel;
-
-                    if (!string.IsNullOrEmpty(audioTrack.AudioSamplerate) && !"auto".Equals(audioTrack.AudioSamplerate))
-                    {
-                        double sampleRate = 0;
-                        if (double.TryParse(audioTrack.AudioSamplerate, NumberStyles.Any, CultureInfo.InvariantCulture, out sampleRate))
-                        {
-                            track.SampleRate = sampleRate;
-                        }
-                    }
+                    track.SampleRate = string.IsNullOrEmpty(audioTrack.AudioSamplerate) || audioTrack.AudioSamplerate.ToLower() == "auto" ? 0 : double.Parse(audioTrack.AudioSamplerate);
 
                     track.EncoderRateType = audioTrack.AudioTrackQualityEnable ? AudioEncoderRateType.Quality : AudioEncoderRateType.Bitrate;
                     track.Quality = audioTrack.AudioTrackQuality;

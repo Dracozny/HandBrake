@@ -3,7 +3,7 @@
 //   This file is part of the HandBrake source code - It may be used under the terms of the GNU General Public License.
 // </copyright>
 // <summary>
-//   A Set of Static Utilities
+//   A Set of Static Utilites
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ namespace HandBrakeWPF.Utilities
     using HandBrake.ApplicationServices.Utilities;
 
     /// <summary>
-    /// A Set of Static Utilities
+    /// A Set of Static Utilites
     /// </summary>
     public class GeneralUtilities
     {

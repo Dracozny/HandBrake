@@ -394,7 +394,7 @@ static kind_t ts_stream_kind( hb_stream_t * stream, int idx )
 {
     if ( stream->ts.list[idx].pes_list != -1 )
     {
-        // Returns kind for the first pes substream in the pes list
+        // Retuns kind for the first pes substream in the pes list
         // All substreams in a TS stream are the same kind.
         return stream->pes.list[stream->ts.list[idx].pes_list].stream_kind;
     }
@@ -408,7 +408,7 @@ static kind_t ts_stream_type( hb_stream_t * stream, int idx )
 {
     if ( stream->ts.list[idx].pes_list != -1 )
     {
-        // Returns stream type for the first pes substream in the pes list
+        // Retuns stream type for the first pes substream in the pes list
         // All substreams in a TS stream are the same stream type.
         return stream->pes.list[stream->ts.list[idx].pes_list].stream_type;
     }
@@ -813,12 +813,6 @@ static void prune_streams(hb_stream_t *d)
 hb_stream_t *
 hb_stream_open(hb_handle_t *h, char *path, hb_title_t *title, int scan)
 {
-    if (title == NULL)
-    {
-        hb_log("hb_stream_open: title is null");
-        return NULL;
-    }
-
     FILE *f = hb_fopen(path, "rb");
     if ( f == NULL )
     {
@@ -834,7 +828,7 @@ hb_stream_open(hb_handle_t *h, char *path, hb_title_t *title, int scan)
         return NULL;
     }
 
-    if (!(title->flags & HBTF_NO_IDR))
+    if( title && !( title->flags & HBTF_NO_IDR ) )
     {
         d->has_IDRs = 1;
     }
@@ -2905,10 +2899,10 @@ static int decode_PAT(const uint8_t *buf, hb_stream_t *stream)
                             }
                     }
 
-//                    pos += 3 + section_len;
+                    pos += 3 + section_len;
             }
 
-//            tablepos = 0;
+            tablepos = 0;
     }
     return 1;
 }

@@ -87,7 +87,7 @@ namespace HandBrakeWPF.ViewModels
         private bool isEncoding;
         private bool showStatusWindow;
         private Preset selectedPreset;
-        private QueueTask queueEditTask;
+        private EncodeTask queueEditTask;
         private int lastEncodePercentage;
         private bool isPresetPanelShowing;
         private bool showSourceSelection;
@@ -296,14 +296,6 @@ namespace HandBrakeWPF.ViewModels
 
         public ISummaryViewModel SummaryViewModel { get; set; }
 
-        /// <summary>
-        /// Active Tab.
-        /// </summary>
-        /// <remarks>
-        ///  Should move this to the view when refactoring the keyboard shotcut handling.
-        /// </remarks>
-        public int SelectedTab { get; set; }
-
         #endregion
 
         #region Properties
@@ -486,7 +478,7 @@ namespace HandBrakeWPF.ViewModels
         public int TitleSpecificScan { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the encode service supports pausing.
+        /// Gets or sets a value indicating whether the encode serivce supports pausing.
         /// </summary>
         public bool CanPause
         {
@@ -1441,11 +1433,6 @@ namespace HandBrakeWPF.ViewModels
             }
         }
 
-        public void ShowPresetPane()
-        {
-            this.IsPresetPanelShowing = !this.IsPresetPanelShowing;
-        }
-
         /// <summary>
         /// Launch the Help pages.
         /// </summary>
@@ -1517,7 +1504,7 @@ namespace HandBrakeWPF.ViewModels
                 return false;
             }
 
-            QueueTask task = new QueueTask(new EncodeTask(this.CurrentTask), HBConfigurationFactory.Create(), this.ScannedSource.ScanPath, this.SelectedPreset);
+            QueueTask task = new QueueTask(new EncodeTask(this.CurrentTask), HBConfigurationFactory.Create(), this.ScannedSource.ScanPath);
 
             if (!this.queueProcessor.CheckForDestinationPathDuplicates(task.Task.Destination))
             {
@@ -1724,15 +1711,13 @@ namespace HandBrakeWPF.ViewModels
         /// <summary>
         /// Edit a Queue Task
         /// </summary>
-        /// <param name="queueTask">
+        /// <param name="task">
         /// The task.
         /// </param>
-        public void EditQueueJob(QueueTask queueTask)
+        public void EditQueueJob(EncodeTask task)
         {
             // Rescan the source to make sure it's still valid
-            EncodeTask task = queueTask.Task;
-
-            this.queueEditTask = queueTask;
+            this.queueEditTask = task;
             this.scanService.Scan(task.Source, task.Title, QueueEditAction, HBConfigurationFactory.Create());
         }
 
@@ -1818,12 +1803,6 @@ namespace HandBrakeWPF.ViewModels
             }
 
             e.Handled = true;
-        }
-
-        public void SwitchTab(int i)
-        {
-            this.SelectedTab = i;
-            this.NotifyOfPropertyChange(() => this.SelectedTab);
         }
 
         /// <summary>
@@ -2221,16 +2200,6 @@ namespace HandBrakeWPF.ViewModels
             /* TODO Fix this. */
             Execute.OnUIThread(() =>
             {
-                if (this.queueEditTask != null && this.selectedPreset.Name != this.queueEditTask.SelectedPresetKey)
-                {
-                    Preset foundPreset = this.presetService.GetPreset(this.queueEditTask.SelectedPresetKey);
-                    if (foundPreset != null)
-                    {
-                        this.selectedPreset = foundPreset;
-                        this.NotifyOfPropertyChange(() => this.SelectedPreset);
-                    }
-                }
-
                 // Copy all the Scan data into the UI
                 scannedSource.CopyTo(this.ScannedSource);
                 this.NotifyOfPropertyChange(() => this.ScannedSource);
@@ -2238,7 +2207,7 @@ namespace HandBrakeWPF.ViewModels
 
                 // Select the Users Title
                 this.SelectedTitle = this.ScannedSource.Titles.FirstOrDefault();
-                this.CurrentTask = new EncodeTask(this.queueEditTask.Task);
+                this.CurrentTask = new EncodeTask(queueEditTask);
                 this.NotifyOfPropertyChange(() => this.CurrentTask);
                 this.HasSource = true;
              
@@ -2252,7 +2221,6 @@ namespace HandBrakeWPF.ViewModels
                 this.SelectedEndPoint = end;
 
                 // Update the Tab Controls
-                this.SummaryViewModel.UpdateTask(this.CurrentTask);
                 this.PictureSettingsViewModel.UpdateTask(this.CurrentTask);
                 this.VideoViewModel.UpdateTask(this.CurrentTask);
                 this.FiltersViewModel.UpdateTask(this.CurrentTask);
@@ -2261,7 +2229,8 @@ namespace HandBrakeWPF.ViewModels
                 this.ChaptersViewModel.UpdateTask(this.CurrentTask);
                 this.AdvancedViewModel.UpdateTask(this.CurrentTask);
                 this.MetaDataViewModel.UpdateTask(this.CurrentTask);
-              
+                this.SummaryViewModel.UpdateTask(this.CurrentTask);
+
                 // Cleanup
                 this.ShowStatusWindow = false;
                 this.SourceLabel = this.SourceName;

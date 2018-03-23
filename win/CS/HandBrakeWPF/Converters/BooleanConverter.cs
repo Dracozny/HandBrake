@@ -38,7 +38,7 @@ namespace HandBrakeWPF.Converters
         /// </returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // Parameter is a boolean which inverts the output.
+            // Paramater is a boolean which inverts the output.
             var param = System.Convert.ToBoolean(parameter, CultureInfo.InvariantCulture);
 
             if (value is bool)

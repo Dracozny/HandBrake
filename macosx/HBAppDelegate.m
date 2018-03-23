@@ -299,11 +299,6 @@
     [self.presetsManager generateBuiltInPresets];
 }
 
-- (IBAction)reloadPreset:(id)sender
-{
-    [self.mainController reloadPreset:self];
-}
-
 #pragma mark - Show Window Menu Items
 
 /**

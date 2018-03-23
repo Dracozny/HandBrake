@@ -524,7 +524,7 @@ Foreign Audio Preferred, else First - If the foreign audio track exists, it will
     <value>No valid source or titles found.</value>
   </data>
   <data name="Main_ScanNoTitlesFoundMessage" xml:space="preserve">
-    <value>HandBrake will not be able to encode the selected source as it did not find a valid source with titles to encode. 
+    <value>HandBrake will not be able to encode the seleteced source as it did not find a valid source with titles to encode. 
 This could be due to one of the following reasons:
 - The source file is not a valid video file or is in a format that HandBrake does not support.
 - The source may be copy protected or include DRM. Please note that HandBrake does not support the removal of copy protections.
@@ -532,7 +532,7 @@ This could be due to one of the following reasons:
 The Activity log may have further information.</value>
   </data>
   <data name="Main_QueueLabel" xml:space="preserve">
-    <value>Queue{0}</value>
+    <value>Show Queue{0}</value>
   </data>
   <data name="Main_Start" xml:space="preserve">
     <value>Start Encode</value>
@@ -595,7 +595,7 @@ The Activity log may have further information.</value>
     <value>There is no further information available about this error.</value>
   </data>
   <data name="ErrorViewModel_UnknownError" xml:space="preserve">
-    <value>An Unknown Error has occurred.</value>
+    <value>An Unknown Error has occured.</value>
   </data>
   <data name="OptionsViewModel_NewUpdate" xml:space="preserve">
     <value>A New Update is Available! Please check the website for release notes.</value>
@@ -784,7 +784,7 @@ Are you sure you want to import the chapter names?</value>
     <value>Chapter duration doesn't match between source and input file</value>
   </data>
   <data name="ScanService_ScanStopFailed" xml:space="preserve">
-    <value>An error occurred when trying to stop the scan. Please restart HandBrake.</value>
+    <value>An error occured when trying to stop the scan. Please restart HandBrake.</value>
   </data>
   <data name="Presets_PresetForceReset" xml:space="preserve">
     <value>HandBrake is unable to upgrade your presets file to a new version format.
@@ -794,7 +794,7 @@ Your preset file will be archived and new one created. You will need to re-creat
     <value>Any settings you changed may need to be reset the next time HandBrake launches.</value>
   </data>
   <data name="UserSettings_AnErrorOccured" xml:space="preserve">
-    <value>A problem occurred when trying to save your preferences.</value>
+    <value>A problem occured when trying to save your preferences.</value>
   </data>
   <data name="UserSettings_YourSettingsHaveBeenReset" xml:space="preserve">
     <value>Warning, your settings have been reset!</value>

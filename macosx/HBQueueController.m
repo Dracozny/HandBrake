@@ -25,7 +25,7 @@
 // Pasteboard type for or drag operations
 #define DragDropSimplePboardType    @"HBQueueCustomOutlineViewPboardType"
 
-// DockTile update frequency in total percent increment
+// DockTile update freqency in total percent increment
 #define dockTileUpdateFrequency     0.1f
 
 @interface HBQueueController () <NSOutlineViewDataSource, HBQueueOutlineViewDelegate>
@@ -391,16 +391,11 @@
     [self.jobs beginTransaction];
     [self.outlineView beginUpdates];
 
-    NSArray<HBJob *> *removeJobs = [self.jobs objectsAtIndexes:indexes];
+    NSArray *removeJobs = [self.jobs objectsAtIndexes:indexes];
 
     if (self.jobs.count > indexes.lastIndex)
     {
         [self.jobs removeObjectsAtIndexes:indexes];
-    }
-
-    for (HBJob *job in removeJobs)
-    {
-        [self.descriptions removeObjectForKey:job.uuid];
     }
 
     [self.outlineView removeItemsAtIndexes:indexes inParent:nil withAnimation:NSTableViewAnimationSlideUp];
@@ -974,14 +969,14 @@
         if (result == HBCoreResultDone)
         {
             title = NSLocalizedString(@"Put down that cocktail…", nil);
-            description = [NSString stringWithFormat:NSLocalizedString(@"Your encode %@ is done!", nil),
+            description = [NSString stringWithFormat:NSLocalizedString(@"your HandBrake encode %@ is done!", nil),
                                      job.outputFileName];
 
         }
         else
         {
             title = NSLocalizedString(@"Encode failed", nil);
-            description = [NSString stringWithFormat:NSLocalizedString(@"Your encode %@ couldn't be completed.", nil),
+            description = [NSString stringWithFormat:NSLocalizedString(@"your HandBrake encode %@ couldn't be completed.", nil),
                            job.outputFileName];
         }
 
@@ -1528,12 +1523,12 @@
     if ([tableColumn.identifier isEqualToString:@"desc"])
     {
         HBJob *job = item;
-        NSAttributedString *description = self.descriptions[job.uuid];
+        NSAttributedString *description = self.descriptions[@(job.hash)];
 
         if (description == nil)
         {
             description = job.attributedDescription;
-            self.descriptions[job.uuid] = description;
+            self.descriptions[@(job.hash)] = description;
         }
 
         return description;

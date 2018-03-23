@@ -818,7 +818,7 @@ static int sanitize_subtitles( hb_job_t * job )
             subtitle = hb_list_item(job->list_subtitle, i);
             /* Remove the scanned subtitle from the list if
              * it would result in:
-             * - an empty track (forced and no forced hits)
+             * - an emty track (forced and no forced hits)
              * - an identical, duplicate subtitle track:
              *   -> both (or neither) are forced
              *   -> subtitle is not forced but all its hits are forced */
@@ -1352,7 +1352,7 @@ static void sanitize_filter_list(hb_list_t *list)
 }
 
 /**
- * Job initialization routine.
+ * Job initialization rountine.
  *
  * Initializes fifos.
  * Creates work objects for synchronizer, video decoder, video renderer,
