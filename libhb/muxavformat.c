@@ -214,6 +214,7 @@ static int avformatInit( hb_mux_object_t * m )
         case HB_VCODEC_X264_8BIT:
         case HB_VCODEC_X264_10BIT:
         case HB_VCODEC_QSV_H264:
+        case HB_VCODEC_FFMPEG_H264_NVENC:
             track->st->codecpar->codec_id = AV_CODEC_ID_H264;
             if (job->mux == HB_MUX_AV_MP4 && job->inline_parameter_sets)
             {
@@ -339,6 +340,7 @@ static int avformatInit( hb_mux_object_t * m )
         case HB_VCODEC_X265_16BIT:
         case HB_VCODEC_QSV_H265:
         case HB_VCODEC_QSV_H265_10BIT:
+        case HB_VCODEC_FFMPEG_H265_NVENC:
             track->st->codecpar->codec_id  = AV_CODEC_ID_HEVC;
             if (job->mux == HB_MUX_AV_MP4 && job->inline_parameter_sets)
             {
@@ -719,7 +721,7 @@ static int avformatInit( hb_mux_object_t * m )
     // Quicktime requires that at least one subtitle is enabled,
     // else it doesn't show any of the subtitles.
     // So check to see if any of the subtitles are flagged to be
-    // the default.  The default will be the enabled track, else
+    // the defualt.  The default will the the enabled track, else
     // enable the first track.
     if (job->mux == HB_MUX_AV_MP4 && subtitle_default == -1)
     {
@@ -1171,7 +1173,7 @@ static int avformatMux(hb_mux_object_t *m, hb_mux_data_t *track, hb_buffer_t *bu
     }
     if (duration < 0)
     {
-        // There is a possibility that some subtitles get through the pipeline
+        // There is a possiblility that some subtitles get through the pipeline
         // without ever discovering their true duration.  Make the duration
         // 10 seconds in this case. Unless they are PGS subs which should
         // have zero duration.
@@ -1272,8 +1274,8 @@ static int avformatMux(hb_mux_object_t *m, hb_mux_data_t *track, hb_buffer_t *bu
                     {
                         char errstr[64];
                         av_strerror(ret, errstr, sizeof(errstr));
-                        hb_error("avformatMux: track %d, av_interleaved_write_frame failed with error '%s' (empty_pkt)",
-                                 track->st->index, errstr);
+                        hb_error("avformatMux: track %d, av_interleaved_write_frame failed with error '%s' (empty_pkt, ret %d)",
+                                 track->st->index, errstr, ret);
                         *job->done_error = HB_ERROR_UNKNOWN;
                         *job->die = 1;
                         return -1;
@@ -1401,8 +1403,8 @@ static int avformatMux(hb_mux_object_t *m, hb_mux_data_t *track, hb_buffer_t *bu
     {
         char errstr[64];
         av_strerror(ret < 0 ? ret : m->oc->pb->error, errstr, sizeof(errstr));
-        hb_error("avformatMux: track %d, av_interleaved_write_frame failed with error '%s'",
-                 track->st->index, errstr);
+        hb_error("avformatMux: track %d, av_interleaved_write_frame failed with error '%s' (ret %d, pb-err %d)",
+                 track->st->index, errstr, ret, m->oc->pb->error);
         *job->done_error = HB_ERROR_UNKNOWN;
         *job->die = 1;
         return -1;

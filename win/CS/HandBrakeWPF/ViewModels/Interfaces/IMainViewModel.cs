@@ -11,8 +11,6 @@ namespace HandBrakeWPF.ViewModels.Interfaces
 {
     using System.Windows;
 
-    using HandBrakeWPF.Services.Queue.Model;
-
     using EncodeTask = HandBrakeWPF.Services.Encode.Model.EncodeTask;
 
     /// <summary>
@@ -98,7 +96,7 @@ namespace HandBrakeWPF.ViewModels.Interfaces
         /// <param name="task">
         /// The task.
         /// </param>
-        void EditQueueJob(QueueTask task);
+        void EditQueueJob(EncodeTask task);
 
         /// <summary>
         /// Shutdown this View
@@ -112,11 +110,5 @@ namespace HandBrakeWPF.ViewModels.Interfaces
         /// The e.
         /// </param>
         void FilesDroppedOnWindow(DragEventArgs e);
-
-        /// <summary>
-        /// Handle Tab Switching
-        /// </summary>
-        /// <param name="i">The Tab Number</param>
-        void SwitchTab(int i);
     }
 }

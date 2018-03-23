@@ -227,13 +227,13 @@ int encCoreAudioInit(hb_work_object_t *w, hb_job_t *job, enum AAC_MODE mode)
         // get available bitrates
         AudioValueRange *bitrates;
         ssize_t bitrateCounts;
-        AudioConverterGetPropertyInfo(pv->converter,
-                                      kAudioConverterApplicableEncodeBitRates,
-                                      &tmpsiz, NULL);
+        err = AudioConverterGetPropertyInfo(pv->converter,
+                                            kAudioConverterApplicableEncodeBitRates,
+                                            &tmpsiz, NULL);
         bitrates = malloc(tmpsiz);
-        AudioConverterGetProperty(pv->converter,
-                                  kAudioConverterApplicableEncodeBitRates,
-                                  &tmpsiz, bitrates);
+        err = AudioConverterGetProperty(pv->converter,
+                                        kAudioConverterApplicableEncodeBitRates,
+                                        &tmpsiz, bitrates);
         bitrateCounts = tmpsiz / sizeof(AudioValueRange);
 
         // set bitrate

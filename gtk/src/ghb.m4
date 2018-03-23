@@ -882,15 +882,6 @@ libx264 authors:
                         <property name="action-name">app.queue-save</property>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkMenuItem" id="queue_open_menu">
-                        <property name="label" translatable="yes">_Load Queue File</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="action-name">app.queue-open</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
@@ -1654,8 +1645,8 @@ This is often the feature title of a DVD.</property>
                         <property name="label" translatable="yes">Reload</property>
                         <property name="visible">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip_text" translatable="yes">Reload the settings for the currently selected preset.
-Modifications will be discarded.</property>
+                        <property name="tooltip_text" translatable="yes">Reload the encoding settings for the currently selected preset.
+    Modifications will be discarded.</property>
                         <property name="receives_default">True</property>
                         <property name="halign">end</property>
                         <property name="action-name">app.preset-reload</property>
@@ -1671,7 +1662,8 @@ Modifications will be discarded.</property>
                         <property name="label" translatable="yes">Save New Preset</property>
                         <property name="visible">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip_text" translatable="yes">Save the current settings to a new Preset.</property>
+                        <property name="tooltip_text" translatable="yes">Reload the encoding settings for the currently selected preset.
+    Modifications will be discarded.</property>
                         <property name="receives_default">True</property>
                         <property name="halign">end</property>
                         <property name="action-name">app.preset-save-as</property>
@@ -3865,7 +3857,7 @@ settings will result in better quality or smaller files.</property>
                                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                                     <property name="tooltip_text" translatable="yes">Tune settings to optimize for common scenarios.
 
-This can improve efficiency for particular source characteristics or set
+This can improve effeciency for particular source characteristics or set
 characteristics of the output file.  Changes will be applied after the
 preset but before all other parameters.</property>
                                     <signal name="changed" handler="video_setting_changed_cb" swapped="no"/>
