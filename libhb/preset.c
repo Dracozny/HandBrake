@@ -921,7 +921,6 @@ static void add_subtitle_for_lang(hb_value_array_t *list, hb_title_t *title,
                                   subtitle_behavior_t *behavior)
 {
     int t;
-    t = find_subtitle_track(title, lang, 0);
     for (t = find_subtitle_track(title, lang, 0);
          t >= 0;
          t = behavior->one ? -1 : find_subtitle_track(title, lang, t + 1))
@@ -3403,7 +3402,7 @@ char * hb_presets_builtin_get_json(void)
 }
 
 // Lookup a preset in the preset list.  The "name" may contain '/'
-// separators to explicitely specify a preset within the preset lists
+// separators to explicitly specify a preset within the preset lists
 // folder structure.
 //
 // If 'recurse' is specified, a recursive search for the first component
@@ -3432,7 +3431,7 @@ static hb_preset_index_t * preset_lookup_path(const char *name,
 }
 
 // Lookup a preset in the preset list.  The "name" may contain '/'
-// separators to explicitely specify a preset within the preset lists
+// separators to explicitly specify a preset within the preset lists
 // folder structure.
 //
 // If 'recurse' is specified, a recursive search for the first component
@@ -3698,6 +3697,12 @@ int hb_presets_add_path(char * path)
     {
         count++;
     }
+
+    if (count == 0)
+    {
+        return -1;
+    }
+
     files = malloc(count * sizeof(char*));
 
     // Find all regular files

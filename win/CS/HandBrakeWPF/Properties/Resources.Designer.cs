@@ -640,7 +640,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An Unknown Error has occured..
+        ///   Looks up a localized string similar to An Unknown Error has occurred..
         /// </summary>
         public static string ErrorViewModel_UnknownError {
             get {
@@ -897,7 +897,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Queue{0}.
+        ///   Looks up a localized string similar to Queue{0}.
         /// </summary>
         public static string Main_QueueLabel {
             get {
@@ -978,7 +978,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to HandBrake will not be able to encode the seleteced source as it did not find a valid source with titles to encode. 
+        ///   Looks up a localized string similar to HandBrake will not be able to encode the selected source as it did not find a valid source with titles to encode. 
         ///This could be due to one of the following reasons:
         ///- The source file is not a valid video file or is in a format that HandBrake does not support.
         ///- The source may be copy protected or include DRM. Please note that HandBrake does not support the removal of copy protections.
@@ -1684,7 +1684,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occured when trying to stop the scan. Please restart HandBrake..
+        ///   Looks up a localized string similar to An error occurred when trying to stop the scan. Please restart HandBrake..
         /// </summary>
         public static string ScanService_ScanStopFailed {
             get {
@@ -1861,7 +1861,7 @@ namespace HandBrakeWPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A problem occured when trying to save your preferences..
+        ///   Looks up a localized string similar to A problem occurred when trying to save your preferences..
         /// </summary>
         public static string UserSettings_AnErrorOccured {
             get {

@@ -30,6 +30,7 @@
 
 #import "HBPresetsViewController.h"
 #import "HBAddPresetController.h"
+#import "HBRenamePresetController.h"
 
 @import HandBrakeKit;
 
@@ -253,6 +254,8 @@
         // note that interacting with menus or panels that become key only when needed will not cause a transient popover to close.
         self.presetsPopover.behavior = NSPopoverBehaviorSemitransient;
         self.presetsPopover.delegate = self;
+
+        [fPresetsView loadView];
     }
 
     // Set up the summary view
@@ -547,7 +550,18 @@
     }
     if (action == @selector(exportPreset:))
     {
-        return [fPresetsView validateUserInterfaceItem:menuItem];
+        return [fPresetsView validateUserInterfaceItem:menuItem] && self.job != nil;
+    }
+    if (action == @selector(selectDefaultPreset:) ||
+        action == @selector(insertCategory:))
+    {
+        return self.job != nil;
+    }
+    if (action == @selector(renamePreset:) ||
+        action == @selector(deletePreset:) ||
+        action == @selector(setDefaultPreset:))
+    {
+        return self.job != nil && self.edited == NO;//fixme
     }
 
     return YES;
@@ -795,7 +809,7 @@
 
 /**
  *  Observe the job settings changes.
- *  This is used to update the file name and extention
+ *  This is used to update the file name and extension
  *  and the custom preset string.
  */
 - (void)addJobObservers
@@ -1365,10 +1379,7 @@
 
 - (void)selectionDidChange
 {
-    if (fPresetsView.selectedPreset != self.currentPreset || self.edited)
-    {
-        [self applyPreset:fPresetsView.selectedPreset];
-    }
+    [self applyPreset:fPresetsView.selectedPreset];
 }
 
 #pragma mark -  Presets
@@ -1393,6 +1404,7 @@
         }
         else
         {
+            fPresetsView.selectedPreset = _currentPreset;
             [self.presetsPopover close];
         }
     }
@@ -1432,6 +1444,15 @@
         [[undo prepareWithInvocationTarget:self] setEdited:_edited];
 
         _edited = edited;
+    }
+}
+
+- (void)reloadPreset:(id)sender;
+{
+    // Reload the currently selected preset if it is selected.
+    if (self.currentPreset != NULL)
+    {
+        [self applyPreset:self.currentPreset];
     }
 }
 
@@ -1478,6 +1499,13 @@
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
     __unused HBAddPresetController *addPresetController = (HBAddPresetController *)CFBridgingRelease(contextInfo);
+
+    if (returnCode == NSModalResponseContinue)
+    {
+        fPresetsView.selectedPreset = addPresetController.preset;
+        [self applyPreset:fPresetsView.selectedPreset];
+        [[NSNotificationCenter defaultCenter] postNotificationName:HBPresetsChangedNotification object:nil];
+    }
 }
 
 - (HBPreset *)createPresetFromCurrentSettings
@@ -1491,6 +1519,28 @@
     [self.job writeToPreset:preset];
 
     return [preset copy];
+}
+
+- (IBAction)showRenamePresetPanel:(id)sender
+{
+    [self.window HB_endEditing];
+    fPresetsView.selectedPreset = _currentPreset;
+
+    HBRenamePresetController *renamePresetController = [[HBRenamePresetController alloc] initWithPreset:self.currentPreset
+                                                                                          presetManager:presetManager];
+
+    [NSApp beginSheet:renamePresetController.window modalForWindow:self.window modalDelegate:self didEndSelector:@selector(renamePresetSheetDidEnd:returnCode:contextInfo:) contextInfo:(void *)CFBridgingRetain(renamePresetController)];
+}
+
+- (void)renamePresetSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+    __unused HBRenamePresetController *renamePresetController = (HBRenamePresetController *)CFBridgingRelease(contextInfo);
+
+    if (returnCode == NSModalResponseContinue)
+    {
+        [self applyPreset:fPresetsView.selectedPreset];
+        [[NSNotificationCenter defaultCenter] postNotificationName:HBPresetsChangedNotification object:nil];
+    }
 }
 
 #pragma mark -
@@ -1513,6 +1563,18 @@
 {
     [self applyPreset:presetManager.defaultPreset];
     fPresetsView.selectedPreset = presetManager.defaultPreset;
+}
+
+- (IBAction)setDefaultPreset:(id)sender
+{
+    fPresetsView.selectedPreset = _currentPreset;
+    [fPresetsView setDefault:sender];
+}
+
+- (IBAction)deletePreset:(id)sender
+{
+    HBPreset *preset = [sender representedObject];
+    [fPresetsView deletePreset:preset];
 }
 
 - (IBAction)insertCategory:(id)sender
