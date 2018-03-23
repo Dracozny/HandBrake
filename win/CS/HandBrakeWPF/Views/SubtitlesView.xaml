@@ -160,6 +160,9 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <Grid.RowDefinitions>
@@ -170,10 +173,11 @@
                                       ItemsSource="{Binding DataContext.SourceTracks, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
                                       SelectedItem="{Binding SourceTrack}" />
 
-                            <CheckBox Grid.Column="3" Margin="5,0,5,0" VerticalAlignment="Center" IsEnabled="{Binding CanBeForced}" IsChecked="{Binding Forced}" 
-                                      Content="Forced Only" FontWeight="Bold" />
+                            <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="Bold" Text="Forced Only" Margin="5,0,0,0" />
+                            <CheckBox Grid.Column="3" Margin="5,0,5,0" VerticalAlignment="Center" IsEnabled="{Binding CanBeForced}" IsChecked="{Binding Forced}" />
                             
-                            <CheckBox Grid.Column="4" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Burned}" x:Name="burnInCheckbox" Content="Burn In" FontWeight="Bold">
+                            <TextBlock Grid.Column="4" VerticalAlignment="Center" FontWeight="Bold" Text="Burn In" />
+                            <CheckBox Grid.Column="5" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Burned}" x:Name="burnInCheckbox">
                                 <CheckBox.IsEnabled>
                                     <MultiBinding Converter="{StaticResource canBurnSubtitleConverter}">
                                         <Binding Path="CanBeBurned" />
@@ -190,7 +194,8 @@
                                 </i:Interaction.Triggers>
                             </CheckBox>
                             
-                            <CheckBox Grid.Column="5" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Default}" Content="Default" FontWeight="Bold">
+                            <TextBlock Grid.Column="6" VerticalAlignment="Center" FontWeight="Bold" Text="Default" />
+                            <CheckBox Grid.Column="7" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Default}">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="Click">
                                         <cal:ActionMessage MethodName="SelectDefaultTrack">
@@ -205,6 +210,8 @@
                         <Grid Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,8,0,8"
                               Visibility="{Binding IsSrtSubtitle, Converter={StaticResource booleanToVisConverter}, ConverterParameter=false}" >
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
@@ -240,21 +247,23 @@
                             <TextBlock Grid.Column="6" VerticalAlignment="Center" FontWeight="Bold" Text="Offset (ms)" />
                             <controls:NumberBox Grid.Column="7" Width="58" Height="24" Margin="5,0,5,0" Minimum="-9000000" Maximum="900000" 
                                                 IsEnabled="{Binding IsSrtSubtitle}" Number="{Binding SrtOffset, Mode=TwoWay}" />
-             
-                            <CheckBox Grid.Column="8" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Burned}" IsEnabled="{Binding CanBeBurned}" Content="Burn In" FontWeight="Bold">
+
+                            <TextBlock Grid.Column="8" VerticalAlignment="Center" FontWeight="Bold" Text="Default" />
+                            <CheckBox Grid.Column="9" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Default}">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="Click">
-                                        <cal:ActionMessage MethodName="SetBurnedToFalseForAllExcept">
+                                        <cal:ActionMessage MethodName="SelectDefaultTrack">
                                             <cal:Parameter Value="{Binding}" />
                                         </cal:ActionMessage>
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
                             </CheckBox>
 
-                            <CheckBox Grid.Column="9" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Default}" Content="Default" FontWeight="Bold">
+                            <TextBlock Grid.Column="10" VerticalAlignment="Center" FontWeight="Bold" Text="Burn In" />
+                            <CheckBox Grid.Column="11" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding Burned}" IsEnabled="{Binding CanBeBurned}">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="Click">
-                                        <cal:ActionMessage MethodName="SelectDefaultTrack">
+                                        <cal:ActionMessage MethodName="SetBurnedToFalseForAllExcept">
                                             <cal:Parameter Value="{Binding}" />
                                         </cal:ActionMessage>
                                     </i:EventTrigger>

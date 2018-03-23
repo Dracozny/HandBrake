@@ -40,6 +40,7 @@
 
 #if !defined(_WIN32)
 #include <libnotify/notify.h>
+#include <dbus/dbus-glib.h>
 #else
 #include <windows.h>
 #include <io.h>
@@ -850,8 +851,6 @@ queue_pause_action_cb(GSimpleAction *action, GVariant *param, gpointer ud);
 G_MODULE_EXPORT void
 queue_save_action_cb(GSimpleAction *action, GVariant *param, gpointer ud);
 G_MODULE_EXPORT void
-queue_open_action_cb(GSimpleAction *action, GVariant *param, gpointer ud);
-G_MODULE_EXPORT void
 show_presets_action_cb(GSimpleAction *action, GVariant *value, gpointer ud);
 G_MODULE_EXPORT void
 hbfd_action_cb(GSimpleAction *action, GVariant *value, gpointer ud);
@@ -900,7 +899,6 @@ static void map_actions(GApplication * app, signal_user_data_t * ud)
         { "queue-start",    queue_start_action_cb           },
         { "queue-pause",    queue_pause_action_cb           },
         { "queue-save",     queue_save_action_cb            },
-        { "queue-open",     queue_open_action_cb            },
         { "hbfd",           NULL,
           NULL, "false",    hbfd_action_cb                  },
         { "show-presets",   NULL,
@@ -990,6 +988,9 @@ ghb_activate_cb(GApplication * app, signal_user_data_t * ud)
     ghb_resource_init();
     ghb_load_icons();
 
+#if !defined(_WIN32)
+    dbus_g_thread_init();
+#endif
     ghb_udev_init();
 
     // Override user config dir

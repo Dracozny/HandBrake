@@ -10,7 +10,5 @@
 
 - (IBAction)showPreferencesWindow:(id)sender;
 - (IBAction)showOutputPanel:(id)sender;
-- (void)reloadPreset:(id)sender;
-
 
 @end

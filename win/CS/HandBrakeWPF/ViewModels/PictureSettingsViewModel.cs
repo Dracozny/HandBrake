@@ -807,11 +807,17 @@ namespace HandBrakeWPF.ViewModels
                 {
                     // Custom
                     // Set the Width, and Maintain Aspect ratio. That should calc the Height for us.
-                    this.Task.Width = this.GetModulusValue(this.sourceResolution.Width - this.CropLeft - this.CropRight);
-           
+                    this.Task.Width = this.GetModulusValue(this.MaxWidth - this.CropLeft - this.CropRight);
+
                     if (this.SelectedAnamorphicMode != Anamorphic.Loose)
                     {
-                        this.Task.Height = this.GetModulusValue(this.sourceResolution.Height - this.CropTop - this.CropBottom);
+                        this.Task.Height = this.GetModulusValue(this.MaxHeight - this.CropTop - this.CropBottom);
+                    }
+ 
+                    // If our height is too large, let it downscale the width for us by setting the height to the lower value.
+                    if (!this.MaintainAspectRatio && this.Height > this.MaxHeight)
+                    {
+                        this.Task.Height = this.MaxHeight;
                     }
                 }
 
@@ -823,7 +829,6 @@ namespace HandBrakeWPF.ViewModels
                     title.ParVal.Width,
                     title.ParVal.Height);
 
-                // Force a re-calc. This will handle MaxWidth / Height corrections.
                 this.RecaulcatePictureSettingsProperties(ChangedPictureField.Width);
             }
 
@@ -950,7 +955,7 @@ namespace HandBrakeWPF.ViewModels
                 return;
             }
 
-            // Step 1, Update what controls are visible.
+            // Step 1, Update what controls are visibile.
             this.UpdateVisibileControls();
 
             // Step 2, Set sensible defaults
@@ -1012,7 +1017,7 @@ namespace HandBrakeWPF.ViewModels
         }
 
         /// <summary>
-        /// The update visible controls.
+        /// The update visibile controls.
         /// </summary>
         private void UpdateVisibileControls()
         {

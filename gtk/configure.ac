@@ -113,7 +113,7 @@ case $host in
 	linux*)
 	  ;;
     esac
-    GHB_PACKAGES="gthread-2.0 gio-2.0 libnotify gmodule-2.0"
+    GHB_PACKAGES="gthread-2.0 gio-2.0 libnotify dbus-glib-1 gmodule-2.0"
 	mingw_flag=no
     ;;
 esac
@@ -183,9 +183,6 @@ case $host in
         HB_LIBS="$HB_LIBS -lpthreadGC2"
 	fi
     HB_LIBS="$HB_LIBS -lregex -luuid"
-    ;;
-  *-*-freebsd*)
-    HB_LIBS="$HB_LIBS -lpthread"
     ;;
   *)
     HB_LIBS="$HB_LIBS -ldl -lpthread"

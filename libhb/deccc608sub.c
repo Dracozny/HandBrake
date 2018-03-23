@@ -859,9 +859,9 @@ static int write_cc_buffer_as_ssa(struct eia608_screen *data,
     aspect = (double)wb->width * wb->par.num /
                     (wb->height * wb->par.den);
 
-    // CC grid is 16 rows by 32 columns (for 4:3 video)
+    // CC grid is 16 rows by 32 colums (for 4:3 video)
     // Our SSA resolution is the title resolution
-    // Translate CC grid to SSA coordinates
+    // Tranlate CC grid to SSA coordinates
     // The numbers are tweaked to keep things off the very
     // edges of the screen and in the "safe" zone
     int screen_columns = 32;
@@ -1789,28 +1789,23 @@ static int decccInit( hb_work_object_t * w, hb_job_t * job )
                 {
                     retval = 1;
                 }
-                else
-                {
-                    init_eia608(pv->cc608->data608);
-                }
+                init_eia608(pv->cc608->data608);
             }
-
-            // When rendering subs, we need to push rollup subtitles out
-            // asap (instead of waiting for a completed line) so that we
-            // do not miss the frame that they should be rendered over.
-            pv->cc608->direct_rollup = w->subtitle->config.dest == RENDERSUB;
-        }
-
-        if (!retval)
-        {
-            // Generate generic SSA Script Info.
-            int height = job->title->geometry.height - job->crop[0] - job->crop[1];
-            int width = job->title->geometry.width - job->crop[2] - job->crop[3];
-            int safe_height = 0.8 * job->title->geometry.height;
-            hb_subtitle_add_ssa_header(w->subtitle, HB_FONT_MONO,
-                                       .08 * safe_height, width, height);
         }
     }
+    if (!retval)
+    {
+        // Generate generic SSA Script Info.
+        int height = job->title->geometry.height - job->crop[0] - job->crop[1];
+        int width = job->title->geometry.width - job->crop[2] - job->crop[3];
+        int safe_height = 0.8 * job->title->geometry.height;
+        hb_subtitle_add_ssa_header(w->subtitle, HB_FONT_MONO,
+                                   .08 * safe_height, width, height);
+    }
+    // When rendering subs, we need to push rollup subtitles out
+    // asap (instead of waiting for a completed line) so that we
+    // do not miss the frame that they should be rendered over.
+    pv->cc608->direct_rollup = w->subtitle->config.dest == RENDERSUB;
     return retval;
 }
 
@@ -1847,13 +1842,9 @@ static int decccWork( hb_work_object_t * w, hb_buffer_t ** buf_in,
 static void decccClose( hb_work_object_t * w )
 {
     hb_work_private_t * pv = w->private_data;
-
-    if (pv)
-    {
-        general_608_close( pv->cc608 );
-        free( pv->cc608->data608 );
-        free( pv->cc608 );
-    }
+    general_608_close( pv->cc608 );
+    free( pv->cc608->data608 );
+    free( pv->cc608 );
     free( w->private_data );
 }
 

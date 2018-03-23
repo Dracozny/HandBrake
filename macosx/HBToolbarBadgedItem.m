@@ -148,12 +148,7 @@
 
         // Work out the area
         CGFloat scaleFactor = rep.pixelsWide / rep.size.width;
-        CGFloat typeSize = 10;
-        if (scaleFactor > 1)
-        {
-            typeSize = 8;
-        }
-        CGFloat pointSize = typeSize * scaleFactor;
+        CGFloat pointSize = 10 * scaleFactor;
 
         NSFont *font = [NSFont boldSystemFontOfSize:pointSize];
         NSDictionary *attr = @{NSParagraphStyleAttributeName : paragraphStyle,
@@ -164,16 +159,10 @@
                                                       options:0
                                                    attributes:attr];
 
-        NSPoint indent = NSMakePoint(typeSize * scaleFactor, 2 * scaleFactor);
+        NSPoint indent = NSMakePoint(10 * scaleFactor, 2 * scaleFactor);
         CGFloat radius = (textBounds.size.height + indent.y) * 0.5f;
 
-        CGFloat offset_x = 0;
-        CGFloat offset_y = 0;
-        if (scaleFactor > 1)
-        {
-            offset_y = 2 * scaleFactor;
-        }
-        NSRect badgeRect = NSMakeRect(size.width - textBounds.size.width - indent.x - offset_x, offset_y,
+        NSRect badgeRect = NSMakeRect(0, 0,
                                       textBounds.size.width + indent.x, textBounds.size.height + indent.y);
         badgeRect = NSIntegralRect(badgeRect);
 

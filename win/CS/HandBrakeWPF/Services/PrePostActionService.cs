@@ -99,7 +99,7 @@ namespace HandBrakeWPF.Services
         /// </param>
         private void EncodeService_EncodeCompleted(object sender, EncodeCompletedEventArgs e)
         {
-            // Send the file to the users requested application
+            // Send the file to the users requested applicaiton
             if (e.Successful)
             {
                 this.SendToApplication(e.FileName);

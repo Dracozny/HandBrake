@@ -22,7 +22,7 @@ namespace HandBrakeWPF.Model
         public bool NewVersionAvailable { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether an Error Occurred.
+        /// Gets a value indicating whether an Error Occured.
         /// </summary>
         public bool ErrorOccured
         {
@@ -50,7 +50,7 @@ namespace HandBrakeWPF.Model
         public string DownloadFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the error that occurred, if any. This will be null if no error occurred.
+        /// Gets or sets the error that occurred, if any. This will be null if no error occured.
         /// </summary>
         public Exception Error { get; set; }
 

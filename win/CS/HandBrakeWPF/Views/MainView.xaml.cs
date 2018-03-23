@@ -73,8 +73,6 @@ namespace HandBrakeWPF.Views
                 {
                     ((MainViewModel)this.DataContext).SummaryViewModel.UpdateDisplayedInfo();
                 }
-
-                this.tabControl.Focus();
             }
         }
 
