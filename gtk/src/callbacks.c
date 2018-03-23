@@ -43,9 +43,10 @@
 #if defined(__linux__) && defined(_HAVE_GUDEV)
 #include <gudev/gudev.h>
 #endif
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
+#if defined( __FreeBSD__ )
+#include <sys/socket.h>
+#endif
 #include <netinet/in.h>
 #include <netdb.h>
 
@@ -99,6 +100,480 @@ static void ghb_shutdown_gsm();
 static gboolean ghb_can_suspend_gpm();
 static void ghb_suspend_gpm();
 static gboolean appcast_busy = FALSE;
+
+#if !defined(_WIN32)
+#define GPM_DBUS_PM_SERVICE         "org.freedesktop.PowerManagement"
+#define GPM_DBUS_PM_PATH            "/org/freedesktop/PowerManagement"
+#define GPM_DBUS_PM_INTERFACE       "org.freedesktop.PowerManagement"
+#define GPM_DBUS_INHIBIT_PATH       "/org/freedesktop/PowerManagement/Inhibit"
+#define GPM_DBUS_INHIBIT_INTERFACE  "org.freedesktop.PowerManagement.Inhibit"
+#endif
+
+#if !defined(_WIN32)
+static GDBusProxy *
+ghb_get_session_dbus_proxy(const gchar *name, const gchar *path, const gchar *interface)
+{
+    GDBusConnection *conn;
+    GDBusProxy *proxy;
+    GError *error = NULL;
+
+    g_debug("ghb_get_session_dbus_proxy()");
+    conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
+    if (conn == NULL)
+    {
+        if (error != NULL)
+        {
+            g_warning("DBUS cannot connect: %s", error->message);
+            g_error_free(error);
+        }
+        return NULL;
+    }
+
+    proxy = g_dbus_proxy_new_sync(conn, G_DBUS_PROXY_FLAGS_NONE, NULL,
+                                  name, path, interface, NULL, NULL);
+    if (proxy == NULL)
+        g_warning("Could not get DBUS proxy: %s", name);
+
+    g_object_unref(conn);
+    return proxy;
+}
+#endif
+
+static gboolean
+ghb_can_suspend_gpm()
+{
+    gboolean can_suspend = FALSE;
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+
+    g_debug("ghb_can_suspend_gpm()");
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_PM_SERVICE,
+                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
+    if (proxy == NULL)
+        return FALSE;
+
+    res = g_dbus_proxy_call_sync(proxy, "CanSuspend", NULL,
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_warning("CanSuspend failed: %s", error->message);
+            g_error_free(error);
+        }
+        else
+            g_warning("CanSuspend failed");
+        // Try to shutdown anyway
+        can_suspend = TRUE;
+    }
+    else
+    {
+        g_variant_get(res, "(b)", &can_suspend);
+        g_variant_unref(res);
+    }
+    g_object_unref(G_OBJECT(proxy));
+#endif
+    return can_suspend;
+}
+
+static void
+ghb_suspend_gpm()
+{
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+
+    g_debug("ghb_suspend_gpm()");
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_PM_SERVICE,
+                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
+    if (proxy == NULL)
+        return;
+
+    res = g_dbus_proxy_call_sync(proxy, "Suspend", NULL,
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_warning("Suspend failed: %s", error->message);
+            g_error_free(error);
+        }
+        else
+            g_warning("Suspend failed");
+    }
+    else
+    {
+        g_variant_unref(res);
+    }
+    g_object_unref(G_OBJECT(proxy));
+#endif
+}
+
+#if !defined(_WIN32)
+static gboolean
+ghb_can_shutdown_gpm()
+{
+    gboolean can_shutdown = FALSE;
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+
+    g_debug("ghb_can_shutdown_gpm()");
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_PM_SERVICE,
+                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
+    if (proxy == NULL)
+        return FALSE;
+
+    res = g_dbus_proxy_call_sync(proxy, "CanShutdown", NULL,
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_warning("CanShutdown failed: %s", error->message);
+            g_error_free(error);
+        }
+        else
+            g_warning("CanShutdown failed");
+        // Try to shutdown anyway
+        can_shutdown = TRUE;
+    }
+    else
+    {
+        g_variant_get(res, "(b)", &can_shutdown);
+        g_variant_unref(res);
+    }
+    g_object_unref(G_OBJECT(proxy));
+    return can_shutdown;
+}
+#endif
+
+#if !defined(_WIN32)
+static void
+ghb_shutdown_gpm()
+{
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+
+    g_debug("ghb_shutdown_gpm()");
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_PM_SERVICE,
+                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
+    if (proxy == NULL)
+        return;
+
+    res = g_dbus_proxy_call_sync(proxy, "Shutdown", NULL,
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_warning("Shutdown failed: %s", error->message);
+            g_error_free(error);
+        }
+        else
+            g_warning("Shutdown failed");
+    }
+    else
+    {
+        g_variant_unref(res);
+    }
+    g_object_unref(G_OBJECT(proxy));
+}
+#endif
+
+guint
+ghb_inhibit_gpm()
+{
+    guint cookie = -1;
+
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+    g_debug("ghb_inhibit_gpm()");
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_PM_SERVICE,
+                            GPM_DBUS_INHIBIT_PATH, GPM_DBUS_INHIBIT_INTERFACE);
+    if (proxy == NULL)
+        return 0;
+
+    res = g_dbus_proxy_call_sync(proxy, "Inhibit",
+                                 g_variant_new("(ss)", "ghb", "Encoding"),
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_error_free(error);
+        }
+    }
+    else
+    {
+        g_variant_get(res, "(u)", &cookie);
+        g_variant_unref(res);
+    }
+    g_object_unref(G_OBJECT(proxy));
+#endif
+
+    return cookie;
+}
+
+void
+ghb_uninhibit_gpm(guint cookie)
+{
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+    g_debug("ghb_uninhibit_gpm() cookie %u", cookie);
+
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_PM_SERVICE,
+                            GPM_DBUS_INHIBIT_PATH, GPM_DBUS_INHIBIT_INTERFACE);
+    if (proxy == NULL)
+        return;
+
+    res = g_dbus_proxy_call_sync(proxy, "UnInhibit",
+                                 g_variant_new("(u)", cookie),
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_error_free(error);
+        }
+    }
+    else
+    {
+        g_variant_unref(res);
+    }
+    g_object_unref(G_OBJECT(proxy));
+#endif
+}
+
+#if !defined(_WIN32)
+// For inhibit and shutdown
+#define GPM_DBUS_SM_SERVICE         "org.gnome.SessionManager"
+#define GPM_DBUS_SM_PATH            "/org/gnome/SessionManager"
+#define GPM_DBUS_SM_INTERFACE       "org.gnome.SessionManager"
+#endif
+
+static gboolean
+ghb_can_shutdown_gsm()
+{
+    gboolean can_shutdown = FALSE;
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_SM_SERVICE,
+                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
+    if (proxy == NULL)
+        return FALSE;
+
+    res = g_dbus_proxy_call_sync(proxy, "CanShutdown", NULL,
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    g_object_unref(G_OBJECT(proxy));
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_error_free(error);
+        }
+        // Try the gpm version
+        can_shutdown = ghb_can_shutdown_gpm();
+    }
+    else
+    {
+        g_variant_get(res, "(b)", &can_shutdown);
+        g_variant_unref(res);
+    }
+#endif
+    return can_shutdown;
+}
+
+static void
+ghb_shutdown_gsm()
+{
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+
+    g_debug("ghb_shutdown_gpm()");
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_SM_SERVICE,
+                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
+    if (proxy == NULL)
+        return;
+
+    res = g_dbus_proxy_call_sync(proxy, "Shutdown", NULL,
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    g_object_unref(G_OBJECT(proxy));
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_error_free(error);
+        }
+        // Try the gpm version
+        ghb_shutdown_gpm();
+    }
+    else
+    {
+        g_variant_unref(res);
+    }
+#endif
+}
+
+guint
+ghb_inhibit_gsm(signal_user_data_t *ud)
+{
+    guint cookie = -1;
+
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+    guint xid;
+    GtkWidget *widget;
+
+    g_debug("ghb_inhibit_gsm()");
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_SM_SERVICE,
+                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
+    if (proxy == NULL)
+        return -1;
+
+    widget = GHB_WIDGET(ud->builder, "hb_window");
+    xid = GDK_WINDOW_XID(gtk_widget_get_window(widget));
+    res = g_dbus_proxy_call_sync(proxy, "Inhibit",
+                                 g_variant_new("(susu)", "ghb", xid, "Encoding", 1 | 4),
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    g_object_unref(G_OBJECT(proxy));
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_error_free(error);
+        }
+    }
+    else
+    {
+        g_variant_get(res, "(u)", &cookie);
+        g_variant_unref(res);
+    }
+#endif
+
+    return cookie;
+}
+
+void
+ghb_uninhibit_gsm(guint cookie)
+{
+#if !defined(_WIN32)
+    GDBusProxy  *proxy;
+    GError *error = NULL;
+    GVariant *res;
+
+    g_debug("ghb_uninhibit_gsm() cookie %u", cookie);
+
+    proxy = ghb_get_session_dbus_proxy(GPM_DBUS_SM_SERVICE,
+                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
+    if (proxy == NULL)
+        return;
+
+    res = g_dbus_proxy_call_sync(proxy, "Uninhibit",
+                                 g_variant_new("(u)", cookie),
+                                 G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+    if (!res)
+    {
+        if (error != NULL)
+        {
+            g_error_free(error);
+        }
+    }
+    else
+    {
+        g_variant_unref(res);
+    }
+    g_object_unref(G_OBJECT(proxy));
+#endif
+}
+
+enum {
+    GHB_SUSPEND_UNINHIBITED = 0,
+    GHB_SUSPEND_INHIBITED_GPM,
+    GHB_SUSPEND_INHIBITED_GSM,
+    GHB_SUSPEND_INHIBITED_GTK
+};
+static int suspend_inhibited = GHB_SUSPEND_UNINHIBITED;
+static guint suspend_cookie;
+
+void
+ghb_inhibit_suspend(signal_user_data_t *ud)
+{
+    if (suspend_inhibited != GHB_SUSPEND_UNINHIBITED)
+    {
+        // Already inhibited
+        return;
+    }
+#if GTK_CHECK_VERSION(3, 4, 0)
+    suspend_cookie = gtk_application_inhibit(ud->app, NULL,
+                            GTK_APPLICATION_INHIBIT_SUSPEND, "Encoding");
+    if (suspend_cookie != 0)
+    {
+        suspend_inhibited = GHB_SUSPEND_INHIBITED_GTK;
+        return;
+    }
+#else
+    suspend_cookie = ghb_inhibit_gsm(ud);
+    if (suspend_cookie != -1)
+    {
+        suspend_inhibited = GHB_SUSPEND_INHIBITED_GSM;
+        return;
+    }
+    suspend_cookie = ghb_inhibit_gpm(ud);
+    if (suspend_cookie != -1)
+    {
+        suspend_inhibited = GHB_SUSPEND_INHIBITED_GPM;
+        return;
+    }
+#endif
+}
+
+void
+ghb_uninhibit_suspend(signal_user_data_t *ud)
+{
+    switch (suspend_inhibited)
+    {
+#if GTK_CHECK_VERSION(3, 4, 0)
+        case GHB_SUSPEND_INHIBITED_GTK:
+            gtk_application_uninhibit(ud->app, suspend_cookie);
+            break;
+#endif
+
+        case GHB_SUSPEND_INHIBITED_GPM:
+            ghb_uninhibit_gpm(suspend_cookie);
+            break;
+
+        case GHB_SUSPEND_INHIBITED_GSM:
+            ghb_uninhibit_gsm(suspend_cookie);
+            break;
+
+        default:
+            break;
+    }
+    suspend_inhibited = GHB_SUSPEND_UNINHIBITED;
+}
 
 // This is a dependency map used for greying widgets
 // that are dependent on the state of another widget.
@@ -1190,6 +1665,7 @@ ghb_load_settings(signal_user_data_t * ud)
     if (preset_modified)
     {
         ghb_clear_presets_selection(ud);
+        ghb_preset_menu_button_refresh(ud, fullname, type);
     }
     else
     {
@@ -2128,7 +2604,8 @@ ghb_update_summary_info(signal_user_data_t *ud)
     gtk_label_set_text(GTK_LABEL(widget), text);
     g_free(text);
 
-    int    width, height, display_width, display_height, par_width, par_height;
+    double display_width;
+    int    width, height, display_height, par_width, par_height;
     char * display_aspect;
 
     width          = ghb_dict_get_int(ud->settings, "scale_width");
@@ -2138,12 +2615,15 @@ ghb_update_summary_info(signal_user_data_t *ud)
     par_width      = ghb_dict_get_int(ud->settings, "PicturePARWidth");
     par_height     = ghb_dict_get_int(ud->settings, "PicturePARHeight");
 
+    display_width = (double)width * par_width / par_height;
     display_aspect = ghb_get_display_aspect_string(display_width,
                                                    display_height);
+
+    display_width  = ghb_dict_get_int(ud->settings, "PictureDisplayWidth");
     text = g_strdup_printf("%dx%d storage, %dx%d display\n"
                            "%d:%d Pixel Aspect Ratio\n"
                             "%s Display Aspect Ratio",
-                           width, height, display_width, display_height,
+                           width, height, (int)display_width, display_height,
                            par_width, par_height, display_aspect);
     widget = GHB_WIDGET(ud->builder, "dimensions_summary");
     gtk_label_set_text(GTK_LABEL(widget), text);
@@ -2193,7 +2673,7 @@ ghb_set_title_settings(signal_user_data_t *ud, GhbValue *settings)
         ghb_dict_set_int(settings, "scale_width",
                  title->geometry.width - crop[2] - crop[3]);
 
-        // If anamorphic or keep_aspect, the hight will
+        // If anamorphic or keep_aspect, the height will
         // be automatically calculated
         gboolean keep_aspect;
         gint pic_par;
@@ -3438,7 +3918,8 @@ ghb_start_next_job(signal_user_data_t *ud)
         status = ghb_dict_get_int(uiDict, "job_status");
         if (status == GHB_QUEUE_PENDING)
         {
-            ghb_inhibit_gsm(ud);
+            ghb_inhibit_suspend(ud);
+printf("inhibited %d\n", suspend_inhibited);
             submit_job(ud, queueDict);
             ghb_update_pending(ud);
 
@@ -3460,7 +3941,7 @@ ghb_start_next_job(signal_user_data_t *ud)
         }
     }
     // Nothing pending
-    ghb_uninhibit_gsm();
+    ghb_uninhibit_suspend(ud);
     ghb_notify_done(ud);
     ghb_update_pending(ud);
     gtk_widget_hide(progress);
@@ -3832,7 +4313,7 @@ ghb_backend_events(signal_user_data_t *ud)
         }
         else
         {
-            ghb_uninhibit_gsm();
+            ghb_uninhibit_suspend(ud);
             gtk_widget_hide(GTK_WIDGET(progress));
             ghb_dict_set_bool(ud->globals, "SkipDiskFreeCheck", FALSE);
         }
@@ -4084,9 +4565,12 @@ show_activity_action_cb(GSimpleAction *action, GVariant *value,
 G_MODULE_EXPORT gboolean
 presets_window_delete_cb(GtkWidget *xwidget, GdkEvent *event, signal_user_data_t *ud)
 {
-    gtk_widget_set_visible(xwidget, FALSE);
-    GtkWidget *widget = GHB_WIDGET(ud->builder, "show_presets");
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(widget), FALSE);
+    GSimpleAction * action;
+    GVariant      * state = g_variant_new_boolean(FALSE);
+
+    action = G_SIMPLE_ACTION(g_action_map_lookup_action(
+                             G_ACTION_MAP(ud->app), "show-presets"));
+    g_action_change_state(G_ACTION(action), state);
     return TRUE;
 }
 
@@ -4281,10 +4765,7 @@ show_presets_action_cb(GSimpleAction *action, GVariant *value,
     gboolean state = g_variant_get_boolean(value);
 
     g_simple_action_set_state(action, value);
-    ghb_dict_set(ud->prefs, "show_presets", ghb_boolean_value(state));
-    presets_window_set_visible(ud, ghb_dict_get_bool(ud->prefs,
-                                                     "show_presets"));
-    ghb_pref_save(ud->prefs, "show_presets");
+    presets_window_set_visible(ud, state);
 }
 
 static void
@@ -4427,7 +4908,7 @@ chapter_edited_cb(
 
         gtk_tree_path_next(treepath);
         // When a cell has been edited, I want to advance to the
-        // next cell and start editing it automaitcally.
+        // next cell and start editing it automatically.
         // Unfortunately, we may not be in a state here where
         // editing is allowed.  This happens when the user selects
         // a new cell with the mouse instead of just hitting enter.
@@ -4917,519 +5398,6 @@ drive_changed_cb(GVolumeMonitor *gvm, GDrive *gd, signal_user_data_t *ud)
 }
 #endif
 
-#if !defined(_WIN32)
-#define GPM_DBUS_PM_SERVICE         "org.freedesktop.PowerManagement"
-#define GPM_DBUS_PM_PATH            "/org/freedesktop/PowerManagement"
-#define GPM_DBUS_PM_INTERFACE       "org.freedesktop.PowerManagement"
-#define GPM_DBUS_INHIBIT_PATH       "/org/freedesktop/PowerManagement/Inhibit"
-#define GPM_DBUS_INHIBIT_INTERFACE  "org.freedesktop.PowerManagement.Inhibit"
-static gboolean gpm_inhibited = FALSE;
-static guint gpm_cookie = -1;
-#endif
-
-static gboolean
-ghb_can_suspend_gpm()
-{
-    gboolean can_suspend = FALSE;
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-
-    g_debug("ghb_can_suspend_gpm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return FALSE;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_PM_SERVICE,
-                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_PM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return FALSE;
-    }
-    res = dbus_g_proxy_call(proxy, "CanSuspend", &error,
-                            G_TYPE_INVALID,
-                            G_TYPE_BOOLEAN, &can_suspend,
-                            G_TYPE_INVALID);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_warning("CanSuspend failed: %s", error->message);
-            g_error_free(error);
-        }
-        else
-            g_warning("CanSuspend failed");
-        // Try to shutdown anyway
-        can_suspend = TRUE;
-    }
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-#endif
-    return can_suspend;
-}
-
-static void
-ghb_suspend_gpm()
-{
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-
-    g_debug("ghb_suspend_gpm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_PM_SERVICE,
-                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_PM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return;
-    }
-    res = dbus_g_proxy_call(proxy, "Suspend", &error,
-                            G_TYPE_INVALID,
-                            G_TYPE_INVALID);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_warning("Suspend failed: %s", error->message);
-            g_error_free(error);
-        }
-        else
-            g_warning("Suspend failed");
-    }
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-#endif
-}
-
-#if !defined(_WIN32)
-static gboolean
-ghb_can_shutdown_gpm()
-{
-    gboolean can_shutdown = FALSE;
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-
-    g_debug("ghb_can_shutdown_gpm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return FALSE;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_PM_SERVICE,
-                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_PM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return FALSE;
-    }
-    res = dbus_g_proxy_call(proxy, "CanShutdown", &error,
-                            G_TYPE_INVALID,
-                            G_TYPE_BOOLEAN, &can_shutdown,
-                            G_TYPE_INVALID);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_warning("CanShutdown failed: %s", error->message);
-            g_error_free(error);
-        }
-        else
-            g_warning("CanShutdown failed");
-        // Try to shutdown anyway
-        can_shutdown = TRUE;
-    }
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-    return can_shutdown;
-}
-#endif
-
-#if !defined(_WIN32)
-static void
-ghb_shutdown_gpm()
-{
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-
-    g_debug("ghb_shutdown_gpm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_PM_SERVICE,
-                            GPM_DBUS_PM_PATH, GPM_DBUS_PM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_PM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return;
-    }
-    res = dbus_g_proxy_call(proxy, "Shutdown", &error,
-                            G_TYPE_INVALID,
-                            G_TYPE_INVALID);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_warning("Shutdown failed: %s", error->message);
-            g_error_free(error);
-        }
-        else
-            g_warning("Shutdown failed");
-    }
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-}
-#endif
-
-void
-ghb_inhibit_gpm()
-{
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-
-    if (gpm_inhibited)
-    {
-        // Already inhibited
-        return;
-    }
-    g_debug("ghb_inhibit_gpm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_PM_SERVICE,
-                            GPM_DBUS_INHIBIT_PATH, GPM_DBUS_INHIBIT_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_PM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return;
-    }
-    res = dbus_g_proxy_call(proxy, "Inhibit", &error,
-                            G_TYPE_STRING, "ghb",
-                            G_TYPE_STRING, "Encoding",
-                            G_TYPE_INVALID,
-                            G_TYPE_UINT, &gpm_cookie,
-                            G_TYPE_INVALID);
-    gpm_inhibited = TRUE;
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_warning("Inhibit failed: %s", error->message);
-            g_error_free(error);
-            gpm_cookie = -1;
-        }
-        else
-            g_warning("Inhibit failed");
-        gpm_cookie = -1;
-        gpm_inhibited = FALSE;
-    }
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-#endif
-}
-
-void
-ghb_uninhibit_gpm()
-{
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-    g_debug("ghb_uninhibit_gpm() gpm_cookie %u", gpm_cookie);
-
-    if (!gpm_inhibited)
-    {
-        // Not inhibited
-        return;
-    }
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_PM_SERVICE,
-                            GPM_DBUS_INHIBIT_PATH, GPM_DBUS_INHIBIT_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_PM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return;
-    }
-    res = dbus_g_proxy_call(proxy, "UnInhibit", &error,
-                            G_TYPE_UINT, gpm_cookie,
-                            G_TYPE_INVALID,
-                            G_TYPE_INVALID);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_warning("UnInhibit failed: %s", error->message);
-            g_error_free(error);
-        }
-        else
-            g_warning("UnInhibit failed");
-    }
-    gpm_inhibited = FALSE;
-    dbus_g_connection_unref(conn);
-    g_object_unref(G_OBJECT(proxy));
-#endif
-}
-
-#if !defined(_WIN32)
-
-// For inhibit and shutdown
-#define GPM_DBUS_SM_SERVICE         "org.gnome.SessionManager"
-#define GPM_DBUS_SM_PATH            "/org/gnome/SessionManager"
-#define GPM_DBUS_SM_INTERFACE       "org.gnome.SessionManager"
-
-#endif
-
-static gboolean
-ghb_can_shutdown_gsm()
-{
-    gboolean can_shutdown = FALSE;
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-
-    g_debug("ghb_can_shutdown_gpm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return FALSE;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_SM_SERVICE,
-                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_SM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return FALSE;
-    }
-    res = dbus_g_proxy_call(proxy, "CanShutdown", &error,
-                            G_TYPE_INVALID,
-                            G_TYPE_BOOLEAN, &can_shutdown,
-                            G_TYPE_INVALID);
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_error_free(error);
-        }
-        // Try to shutdown anyway
-        can_shutdown = TRUE;
-        // Try the gpm version
-        return ghb_can_shutdown_gpm();
-    }
-#endif
-    return can_shutdown;
-}
-
-static void
-ghb_shutdown_gsm()
-{
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-
-    g_debug("ghb_shutdown_gpm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_SM_SERVICE,
-                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_SM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return;
-    }
-    res = dbus_g_proxy_call(proxy, "Shutdown", &error,
-                            G_TYPE_INVALID,
-                            G_TYPE_INVALID);
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_error_free(error);
-        }
-        // Try the gpm version
-        ghb_shutdown_gpm();
-    }
-#endif
-}
-
-void
-ghb_inhibit_gsm(signal_user_data_t *ud)
-{
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-    guint xid;
-    GtkWidget *widget;
-
-
-    if (gpm_inhibited)
-    {
-        // Already inhibited
-        return;
-    }
-    g_debug("ghb_inhibit_gsm()");
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_SM_SERVICE,
-                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_SM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return;
-    }
-    widget = GHB_WIDGET(ud->builder, "hb_window");
-    xid = GDK_WINDOW_XID(gtk_widget_get_window(widget));
-    res = dbus_g_proxy_call(proxy, "Inhibit", &error,
-                            G_TYPE_STRING, "ghb",
-                            G_TYPE_UINT, xid,
-                            G_TYPE_STRING, "Encoding",
-                            G_TYPE_UINT, 1 | 4,
-                            G_TYPE_INVALID,
-                            G_TYPE_UINT, &gpm_cookie,
-                            G_TYPE_INVALID);
-    gpm_inhibited = TRUE;
-    g_object_unref(G_OBJECT(proxy));
-    dbus_g_connection_unref(conn);
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_error_free(error);
-            gpm_cookie = -1;
-        }
-        gpm_cookie = -1;
-        gpm_inhibited = FALSE;
-        // Try the gpm version
-        ghb_inhibit_gpm();
-    }
-#endif
-}
-
-void
-ghb_uninhibit_gsm()
-{
-#if !defined(_WIN32)
-    DBusGConnection *conn;
-    DBusGProxy  *proxy;
-    GError *error = NULL;
-    gboolean res;
-
-    g_debug("ghb_uninhibit_gsm() gpm_cookie %u", gpm_cookie);
-
-    if (!gpm_inhibited)
-    {
-        // Not inhibited
-        return;
-    }
-    conn = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (error != NULL)
-    {
-        g_warning("DBUS cannot connect: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-    proxy = dbus_g_proxy_new_for_name(conn, GPM_DBUS_SM_SERVICE,
-                            GPM_DBUS_SM_PATH, GPM_DBUS_SM_INTERFACE);
-    if (proxy == NULL)
-    {
-        g_warning("Could not get DBUS proxy: %s", GPM_DBUS_SM_SERVICE);
-        dbus_g_connection_unref(conn);
-        return;
-    }
-    res = dbus_g_proxy_call(proxy, "Uninhibit", &error,
-                            G_TYPE_UINT, gpm_cookie,
-                            G_TYPE_INVALID,
-                            G_TYPE_INVALID);
-    dbus_g_connection_unref(conn);
-    g_object_unref(G_OBJECT(proxy));
-    if (!res)
-    {
-        if (error != NULL)
-        {
-            g_error_free(error);
-        }
-        ghb_uninhibit_gpm();
-    }
-    gpm_inhibited = FALSE;
-#endif
-}
-
 G_MODULE_EXPORT gboolean
 easter_egg_cb(
     GtkWidget *widget,
@@ -5803,8 +5771,6 @@ window_map_cb(
     GdkEventAny *event,
     signal_user_data_t *ud)
 {
-    presets_window_set_visible(ud, ghb_dict_get_bool(ud->prefs,
-                                                     "show_presets"));
     return FALSE;
 }
 
@@ -5867,4 +5833,3 @@ void ghb_container_empty(GtkContainer *c)
 {
     gtk_container_foreach(c, container_empty_cb, NULL);
 }
-
